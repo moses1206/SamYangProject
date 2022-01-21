@@ -1,3 +1,3 @@
-## SAMYANG FOODS BACKEND
+## SAMYANG WinWin BACKEND
 
 Backend : BuHO Jang
