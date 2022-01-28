@@ -5,7 +5,13 @@ import mongoose from 'mongoose'
 const CommentSchema = mongoose.Schema(
   {
     content: { type: String, required: true },
-    user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'user' },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'user',
+      index: true,
+    },
+    storeName: { type: String, required: true },
     promotion: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
@@ -15,6 +21,8 @@ const CommentSchema = mongoose.Schema(
   { timestamps: true }
 )
 
+CommentSchema.index({ promotion: 1, createdAt: -1 })
+
 const Comment = mongoose.model('comment', CommentSchema)
 
-export default Comment
+export { Comment, CommentSchema }

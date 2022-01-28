@@ -1,13 +1,11 @@
 import { Router } from 'express'
 const promotionRouter = Router()
 import mongoose from 'mongoose'
-import Promotion from '../models/Promotion.js'
-import User from '../models/User.js'
-import commentRouter from './CommentRoute.js'
+import { Promotion } from '../models/Promotion.js'
+import { User } from '../models/User.js'
+import { Comment } from '../models/Comment.js'
 
 const { ObjectId } = mongoose.Types
-
-promotionRouter.use('/promotion/:promotionid/comment', commentRouter)
 
 promotionRouter.post('/', async (req, res) => {
   try {
@@ -22,7 +20,7 @@ promotionRouter.post('/', async (req, res) => {
       promotionCost,
       promotionDetail,
       islive,
-      userid,
+      userId,
     } = req.body
 
     // Promotion Validation
@@ -52,10 +50,10 @@ promotionRouter.post('/', async (req, res) => {
       return res.status(400).send({ err: 'islive must be Boolean' })
 
     // User Validation
-    if (!ObjectId.isValid(userid))
-      return res.status(400).send({ err: 'userid is invalid ' })
+    if (!ObjectId.isValid(userId))
+      return res.status(400).send({ err: 'userId is invalid ' })
 
-    let user = await User.findById(userid)
+    let user = await User.findById(userId)
     if (!user) return res.status(400).send({ err: 'user does not exist !!' })
 
     let promotion = new Promotion({
@@ -73,7 +71,23 @@ promotionRouter.post('/', async (req, res) => {
 
 promotionRouter.get('/', async (req, res) => {
   try {
+    // page가 없으면 0으로 처리
+    let { page = 0 } = req.query
+    page = parseInt(page)
+
+    console.log('page :', page)
     const promotions = await Promotion.find({})
+      // UpdatedAt 최근순으로
+      .sort({ updatedAt: -1 })
+      // 스킵숫자
+      .skip(page * 3)
+      // 프론트로 보내줄 숫자
+      .limit(3)
+    // .populate([
+    //   { path: 'user' },
+    //   { path: 'comments', populate: { path: 'user' } },
+    // ])
+
     return res.send({ promotions })
   } catch (err) {
     console.log(err)
@@ -81,13 +95,20 @@ promotionRouter.get('/', async (req, res) => {
   }
 })
 
-promotionRouter.get('/:promotionid', async (req, res) => {
+promotionRouter.get('/:promotionId', async (req, res) => {
   try {
-    const { promotionid } = req.params
-    if (!ObjectId.isValid(promotionid))
-      return res.status(400).send({ err: 'invalid Promotionid' })
-    const promotion = await Promotion.findOne({ _id: promotionid })
-    return res.send({ promotion })
+    const { promotionId } = req.params
+    if (!ObjectId.isValid(promotionId))
+      return res.status(400).send({ err: 'invalid promotionId' })
+
+    const promotion = await Promotion.findOne({ _id: promotionId })
+
+    // 페이지가 몇개인지 확인
+    // const commentCount = await Comment.find({
+    //   promotion: promotionId,
+    // }).countDocuments()
+
+    return res.send({ promotion, commentCount })
   } catch (err) {
     console.log(err)
     res.send(500).send({ err: err.message })
@@ -139,7 +160,7 @@ promotionRouter.put('/:promotionid', async (req, res) => {
     return res.send({ promotion })
   } catch (err) {
     console.log(err)
-    res.send(500).send({ err: err.message })
+    res.status(500).send({ err: err.message })
   }
 })
 

@@ -2,7 +2,9 @@ import express from 'express'
 import mongoose from 'mongoose'
 import { Router } from 'express'
 const userRouter = Router()
-import User from '../models/User.js'
+import { User } from '../models/User.js'
+import { Promotion } from '../models/Promotion.js'
+import { Comment } from '../models/Comment.js'
 
 userRouter.get('/', async (req, res) => {
   try {
@@ -13,14 +15,14 @@ userRouter.get('/', async (req, res) => {
   }
 })
 
-userRouter.get('/:userid', async (req, res) => {
+userRouter.get('/:userId', async (req, res) => {
   try {
-    const { userid } = req.params
+    const { userId } = req.params
 
-    if (!mongoose.isValidObjectId(userid))
+    if (!mongoose.isValidObjectId(userId))
       return res.status(400).send({ err: 'invalid UserId' })
 
-    const user = await User.findOne({ _id: userid })
+    const user = await User.findOne({ _id: userId })
     return res.send({ user })
   } catch (err) {
     console.log(err)
@@ -28,25 +30,11 @@ userRouter.get('/:userid', async (req, res) => {
   }
 })
 
-userRouter.delete('/:userid', async (req, res) => {
+userRouter.put('/:userId', async (req, res) => {
   try {
-    const { userid } = req.params
-    if (!mongoose.isValidObjectId(userid))
-      res.status(400).send({ err: 'invalid userid' })
-    const user = await User.findOneAndDelete({ _id: userid })
-
-    return res.send({ user })
-  } catch (err) {
-    console.log(err)
-    return res.send({ err: err.message })
-  }
-})
-
-userRouter.put('/:userid', async (req, res) => {
-  try {
-    const { userid } = req.params
-    if (!mongoose.isValidObjectId(userid))
-      res.status(400).send({ err: 'invalid userid' })
+    const { userId } = req.params
+    if (!mongoose.isValidObjectId(userId))
+      res.status(400).send({ err: 'invalid userId' })
 
     const { channel, storeName, address, phoneNumber, userImage } = req.body
 
@@ -84,11 +72,44 @@ userRouter.put('/:userid', async (req, res) => {
     //   { new: true }
     // )
 
-    let user = await User.findById(userid)
-    if (channel) user.channel = channel
-    if (storeName) user.storeName = storeName
-    if (address) user.address = address
-    if (phoneNumber) user.phoneNumber = phoneNumber
+    let user = await User.findById(userId)
+    if (channel) {
+      user.channel = channel
+      await Promotion.updateMany(
+        { 'user._id': userId },
+        { 'user.channel': channel }
+      )
+    }
+    if (storeName) {
+      user.storeName = storeName
+      await Promise.all([
+        Promotion.updateMany(
+          { 'user._id': userId },
+          { 'user.storeName': storeName }
+        ),
+        Promotion.updateMany(
+          {},
+          { 'comments.$[comment].storeName': `${storeName}` },
+          { arrayFilters: [{ 'comment.user': userId }] }
+        ),
+      ])
+    }
+    if (phoneNumber) {
+      user.phoneNumber = phoneNumber
+      await Promotion.updateMany(
+        { 'user._id': userId },
+        { 'user.phoneNumber': phoneNumber }
+      )
+    }
+
+    if (address) {
+      user.address = address
+      await Promotion.updateMany(
+        { 'user._id': userId },
+        { 'user.address': address }
+      )
+    }
+
     if (userImage) user.userImage = userImage
 
     await user.save()
@@ -102,7 +123,7 @@ userRouter.put('/:userid', async (req, res) => {
 userRouter.post('/register', async (req, res) => {
   try {
     let {
-      userid,
+      userId,
       password,
       channel,
       storeName,
@@ -111,7 +132,7 @@ userRouter.post('/register', async (req, res) => {
       address,
     } = req.body
 
-    if (!userid) return res.status(400).send({ err: 'userid is required' })
+    if (!userId) return res.status(400).send({ err: 'userId is required' })
     if (!password) return res.status(400).send({ err: 'password is required' })
     if (!channel) return res.status(400).send({ err: 'channel is required' })
     if (!storeName)
@@ -128,6 +149,32 @@ userRouter.post('/register', async (req, res) => {
   } catch (err) {
     console.log(err)
     return res.status(500).send({ err: err.message })
+  }
+})
+
+userRouter.delete('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params
+    if (!mongoose.isValidObjectId(userId))
+      res.status(400).send({ err: 'invalid userId' })
+    const [user] = await Promise.all([
+      // 유저 삭제
+      User.findOneAndDelete({ _id: userId }),
+      // 유저가 작성한 프로모션 삭제
+      Promotion.deleteMany({ 'user._id': userId }),
+      // 프로모션모델에서 유저가 작성한 코멘트 삭제
+      Promotion.updateMany(
+        { 'comments.user': userId },
+        { $pull: { comments: { user: userId } } }
+      ),
+      // 코멘트모델에서 유저가 작성한 코멘트 삭제
+      Comment.deleteMany({ user: userId }),
+    ])
+
+    return res.send({ user })
+  } catch (err) {
+    console.log(err)
+    return res.send({ err: err.message })
   }
 })
 

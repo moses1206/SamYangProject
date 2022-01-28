@@ -7,15 +7,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon --ignore client.js src/server.js",
+    "devv": "nodemon client.js"
   },
   "author": "BuHoJang",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.25.0",
     "colors": "^1.4.0",
     "dotenv": "^14.2.0",
     "express": "^4.17.2",
-    "faker": "^6.6.6",
+    "faker": "^5.5.3",
     "mongoose": "^6.1.6"
   },
   "devDependencies": {

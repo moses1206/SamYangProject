@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 const UserSchema = mongoose.Schema(
   {
-    userid: { type: String, required: true, unique: true },
+    userId: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     channel: { type: String, required: true },
     storeName: { type: String, required: true },
@@ -20,4 +20,4 @@ const UserSchema = mongoose.Schema(
 
 const User = mongoose.model('user', UserSchema)
 
-export default User
+export { User, UserSchema }
