@@ -22,9 +22,9 @@ const server = async () => {
     // Body Data 읽기
     app.use(express.json())
 
-    app.use('/user', userRouter)
-    app.use('/promotion', promotionRouter)
-    app.use('/promotion/:promotionId/comment', commentRouter)
+    app.use('/api/user', userRouter)
+    app.use('/api/promotion', promotionRouter)
+    app.use('/api/promotion/:promotionId/comment', commentRouter)
 
     const PORT = process.env.PORT || 5000
     app.listen(PORT, async () => {
@@ -32,7 +32,7 @@ const server = async () => {
         `Server running in ${process.env.NODE_ENV} mode on port ${5000}`.rainbow
       )
       // for (let i = 0; i < 20; i++) {
-      // await generateFakeData(10, 2, 10)
+      await generateFakeData(10, 10, 10)
       // }
     })
   } catch (err) {

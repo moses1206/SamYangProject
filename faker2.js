@@ -2,7 +2,7 @@ import faker from 'faker'
 import { User } from './src/models/User.js'
 import axios from 'axios'
 
-const URI = 'http://localhost:5000'
+const URI = 'http://localhost:5000/api'
 
 const generateFakeData = async (
   userCount,
@@ -27,6 +27,7 @@ const generateFakeData = async (
           userId: faker.name.firstName() + parseInt(Math.random() * 100),
           password: faker.internet.password(),
           channel: faker.lorem.word(),
+          userName: faker.lorem.word(),
           storeName: faker.lorem.word(),
           phoneNumber: faker.phone.phoneNumber(),
           userImage:
@@ -36,6 +37,7 @@ const generateFakeData = async (
             lat: faker.address.latitude(),
             lng: faker.address.longitude(),
           },
+          role: 'dealer',
         })
       )
     }
