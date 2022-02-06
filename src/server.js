@@ -10,8 +10,9 @@ import colors from 'colors'
 
 const server = async () => {
   try {
-    const { MONGO_URI, NODE_ENV } = process.env
+    const { MONGO_URI, NODE_ENV, PORT } = process.env
     if (!MONGO_URI) throw new Error('MONGO_URI is required!!')
+    if (!PORT) throw new Error('Port is required !!')
 
     await mongoose.connect(MONGO_URI)
 
@@ -25,9 +26,8 @@ const server = async () => {
     app.use('/api/promotion', promotionRouter)
     app.use('/api/promotion/:promotionId/comment', commentRouter)
 
-    const PORT = process.env.PORT || 5000
     app.listen(PORT, async () => {
-      console.log(`Server running in ${NODE_ENV} mode on port ${5000}`.rainbow)
+      console.log(`Server running in ${NODE_ENV} mode on port ${PORT}`.rainbow)
       // console.time('insert time: ')
       // for (let i = 0; i < 20; i++) {
       // await generateFakeData(10, 10, 10)
