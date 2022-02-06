@@ -31,8 +31,10 @@ const server = async () => {
       console.log(
         `Server running in ${process.env.NODE_ENV} mode on port ${5000}`.rainbow
       )
+      // console.time('insert time: ')
       // for (let i = 0; i < 20; i++) {
-      await generateFakeData(10, 10, 10)
+      // await generateFakeData(10, 10, 10)
+      // console.timeEnd('insert time: ')
       // }
     })
   } catch (err) {
