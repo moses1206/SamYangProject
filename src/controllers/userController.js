@@ -249,4 +249,35 @@ const deleteUser = expressAsyncHandler(async (req, res) => {
   return res.send({ user })
 })
 
-export { authUser, registerUser, getUsers, getUser, updateUser, deleteUser }
+// @desc    Get User Profile
+// @route   GET   /api/user/profile
+// @access  Private
+const getUserProfile = expressAsyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id)
+
+  if (user) {
+    res.json({
+      _id: user._id,
+      channel: user.channel,
+      userName: user.userName,
+      storeName: user.storeName,
+      address: user.address,
+      role: user.role,
+    })
+  } else {
+    res.status(404)
+    throw new Error('User not found!!')
+  }
+
+  return res.send('Success')
+})
+
+export {
+  authUser,
+  registerUser,
+  getUsers,
+  getUser,
+  updateUser,
+  deleteUser,
+  getUserProfile,
+}

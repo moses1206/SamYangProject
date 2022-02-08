@@ -12,16 +12,12 @@ import {
   getUser,
   updateUser,
   deleteUser,
+  getUserProfile,
 } from '../controllers/userController.js'
 
-userRouter.delete('/:userId', async (req, res) => {
-  try {
-  } catch (err) {
-    console.log(err)
-    return res.send({ err: err.message })
-  }
-})
+import { protect } from '../middleware/authMiddleware.js'
 
+userRouter.route('/profile').get(protect, getUserProfile)
 userRouter.route('/login').post(authUser)
 userRouter.route('/register').post(registerUser)
 userRouter.route('/').get(getUsers)
