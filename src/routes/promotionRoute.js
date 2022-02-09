@@ -1,8 +1,5 @@
-// import { Router } from 'express'
-// const promotionRouter = Router()
 import express from 'express'
 const promotionRouter = express.Router()
-
 import {
   getPromotions,
   getPromotionById,

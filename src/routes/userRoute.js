@@ -1,10 +1,5 @@
-import express from 'express'
-import mongoose from 'mongoose'
 import { Router } from 'express'
 const userRouter = Router()
-import { User } from '../models/User.js'
-import { Promotion } from '../models/Promotion.js'
-import { Comment } from '../models/Comment.js'
 import {
   authUser,
   registerUser,
